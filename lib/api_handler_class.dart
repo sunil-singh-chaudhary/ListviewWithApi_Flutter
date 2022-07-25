@@ -1,11 +1,8 @@
 import 'dart:convert';
-
 import 'package:api_listview_flutte_demo/Catalog_model.dart';
 import 'package:api_listview_flutte_demo/itemWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 
 class api_handler_class extends StatefulWidget {
   const api_handler_class({super.key});
@@ -23,11 +20,17 @@ class _api_handler_classState extends State<api_handler_class> {
   }
 
   Future<void> readJson() async {
+    //await Future.delayed(Duration(seconds: 2));
     final String response =
         await rootBundle.loadString('assets/files/api_data.json');
-    final data = await jsonDecode(response);
-    var productData = data["Products"];
-    print(productData);
+
+    final decodeddata = await jsonDecode(response);
+    var productData = decodeddata["Products"];
+
+    //Map data using below comands
+    Catalog_model.items =
+        List.from(productData).map<Item>((item) => Item.fromMap(item)).toList();
+    setState(() {});
   }
 
   //final dummy_list = List.generate(20, (index) => Catalog_model.items[0]);
@@ -36,12 +39,18 @@ class _api_handler_classState extends State<api_handler_class> {
     return Scaffold(
       appBar: AppBar(title: const Text("Items Listview")),
       body: Padding(
-          padding: const EdgeInsets.all(10),
-          child: ListView.builder(
-            itemCount: Catalog_model.items.length,
-            itemBuilder: (context, index) =>
-                itemWidget(item: Catalog_model.items[index]),
-          )),
+        padding: const EdgeInsets.all(10),
+        //important to handling nullo pointer exception when we fetch data from server then it will  work
+        child: (Catalog_model.items != null && Catalog_model.items.isNotEmpty)
+            ? ListView.builder(
+                itemCount: Catalog_model.items.length,
+                itemBuilder: (context, index) =>
+                    itemWidget(item: Catalog_model.items[index]),
+              )
+            : const Center(
+                child: CircularProgressIndicator(),
+              ),
+      ),
     );
   }
 }
