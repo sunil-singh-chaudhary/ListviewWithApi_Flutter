@@ -12,6 +12,7 @@ class api_handler_class extends StatefulWidget {
 }
 
 class _api_handler_classState extends State<api_handler_class> {
+  var refreshkey = GlobalKey<RefreshIndicatorState>();
   @override
   void initState() {
     readJson();
@@ -20,7 +21,10 @@ class _api_handler_classState extends State<api_handler_class> {
   }
 
   Future<void> readJson() async {
-    //await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(Duration(seconds: 10));
+
+    refreshkey.currentState?.show();
+
     final String response =
         await rootBundle.loadString('assets/files/api_data.json');
 
@@ -38,18 +42,24 @@ class _api_handler_classState extends State<api_handler_class> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Items Listview")),
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        //important to handling nullo pointer exception when we fetch data from server then it will  work
-        child: (Catalog_model.items != null && Catalog_model.items.isNotEmpty)
-            ? ListView.builder(
-                itemCount: Catalog_model.items.length,
-                itemBuilder: (context, index) =>
-                    itemWidget(item: Catalog_model.items[index]),
-              )
-            : const Center(
-                child: CircularProgressIndicator(),
-              ),
+      body: RefreshIndicator(
+        key: refreshkey,
+        onRefresh: () {
+          return readJson();
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          //important to handling nullo pointer exception when we fetch data from server then it will  work
+          child: (Catalog_model.items != null && Catalog_model.items.isNotEmpty)
+              ? ListView.builder(
+                  itemCount: Catalog_model.items.length,
+                  itemBuilder: (context, index) =>
+                      itemWidget(item: Catalog_model.items[index]),
+                )
+              : const Center(
+                  child: CircularProgressIndicator(),
+                ),
+        ),
       ),
     );
   }
